@@ -9,6 +9,11 @@ public static class FunctionLibrary
 
     public static Function[] functions = { Wave, MultiWave, Ripple, Sphere, DonutKindOf, Onion, SpaceStation, TwistedOnion, Torus, TwistingTorus };
 
+    public static int FunctionCount
+    { 
+        get => functions.Length;
+    }
+
     public static Function GetFunction(FunctionName name)
     {
         return functions[(int) name];

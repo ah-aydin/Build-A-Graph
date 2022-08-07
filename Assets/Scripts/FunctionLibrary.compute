@@ -1,0 +1,368 @@
+#pragma kernel WaveKernel
+#pragma kernel WaveToMultiWaveKernel
+#pragma kernel WaveToRippleKernel
+#pragma kernel WaveToSphereKernel
+#pragma kernel WaveToDonutKindOfKernel
+#pragma kernel WaveToOnionKernel
+#pragma kernel WaveToSpaceStationKernel
+#pragma kernel WaveToTwistedOnionKernel
+#pragma kernel WaveToTorusKernel
+#pragma kernel WaveToTwistingTorusKernel
+
+#pragma kernel MultiWaveToWaveKernel
+#pragma kernel MultiWaveKernel
+#pragma kernel MultiWaveToRippleKernel
+#pragma kernel MultiWaveToSphereKernel
+#pragma kernel MultiWaveToDonutKindOfKernel
+#pragma kernel MultiWaveToOnionKernel
+#pragma kernel MultiWaveToSpaceStationKernel
+#pragma kernel MultiWaveToTwistedOnionKernel
+#pragma kernel MultiWaveToTorusKernel
+#pragma kernel MultiWaveToTwistingTorusKernel
+
+#pragma kernel RippleToWaveKernel
+#pragma kernel RippleToMultiWaveKernel
+#pragma kernel RippleKernel
+#pragma kernel RippleToSphereKernel
+#pragma kernel RippleToDonutKindOfKernel
+#pragma kernel RippleToOnionKernel
+#pragma kernel RippleToSpaceStationKernel
+#pragma kernel RippleToTwistedOnionKernel
+#pragma kernel RippleToTorusKernel
+#pragma kernel RippleToTwistingTorusKernel
+
+#pragma kernel SphereToWaveKernel
+#pragma kernel SphereToMultiWaveKernel
+#pragma kernel SphereToRippleKernel
+#pragma kernel SphereKernel
+#pragma kernel SphereToDonutKindOfKernel
+#pragma kernel SphereToOnionKernel
+#pragma kernel SphereToSpaceStationKernel
+#pragma kernel SphereToTwistedOnionKernel
+#pragma kernel SphereToTorusKernel
+#pragma kernel SphereToTwistingTorusKernel
+
+#pragma kernel DonutKindOfToWaveKernel
+#pragma kernel DonutKindOfToMultiWaveKernel
+#pragma kernel DonutKindOfToRippleKernel
+#pragma kernel DonutKindOfToSphereKernel
+#pragma kernel DonutKindOfKernel
+#pragma kernel DonutKindOfToOnionKernel
+#pragma kernel DonutKindOfToSpaceStationKernel
+#pragma kernel DonutKindOfToTwistedOnionKernel
+#pragma kernel DonutKindOfToTorusKernel
+#pragma kernel DonutKindOfToTwistingTorusKernel
+
+#pragma kernel OnionToWaveKernel
+#pragma kernel OnionToMultiWaveKernel
+#pragma kernel OnionToRippleKernel
+#pragma kernel OnionToSphereKernel
+#pragma kernel OnionToDonutKindOfKernel
+#pragma kernel OnionKernel
+#pragma kernel OnionToSpaceStationKernel
+#pragma kernel OnionToTwistedOnionKernel
+#pragma kernel OnionToTorusKernel
+#pragma kernel OnionToTwistingTorusKernel
+
+#pragma kernel SpaceStationToWaveKernel
+#pragma kernel SpaceStationToMultiWaveKernel
+#pragma kernel SpaceStationToRippleKernel
+#pragma kernel SpaceStationToSphereKernel
+#pragma kernel SpaceStationToDonutKindOfKernel
+#pragma kernel SpaceStationToOnionKernel
+#pragma kernel SpaceStationKernel
+#pragma kernel SpaceStationToTwistedOnionKernel
+#pragma kernel SpaceStationToTorusKernel
+#pragma kernel SpaceStationToTwistingTorusKernel
+
+#pragma kernel TwistedOnionToWaveKernel
+#pragma kernel TwistedOnionToMultiWaveKernel
+#pragma kernel TwistedOnionToRippleKernel
+#pragma kernel TwistedOnionToSphereKernel
+#pragma kernel TwistedOnionToDonutKindOfKernel
+#pragma kernel TwistedOnionToOnionKernel
+#pragma kernel TwistedOnionToSpaceStationKernel
+#pragma kernel TwistedOnionKernel
+#pragma kernel TwistedOnionToTorusKernel
+#pragma kernel TwistedOnionToTwistingTorusKernel
+
+#pragma kernel TorusToWaveKernel
+#pragma kernel TorusToMultiWaveKernel
+#pragma kernel TorusToRippleKernel
+#pragma kernel TorusToSphereKernel
+#pragma kernel TorusToDonutKindOfKernel
+#pragma kernel TorusToOnionKernel
+#pragma kernel TorusToSpaceStationKernel
+#pragma kernel TorusToTwistedOnionKernel
+#pragma kernel TorusKernel
+#pragma kernel TorusToTwistingTorusKernel
+
+#pragma kernel TwistingTorusToWaveKernel
+#pragma kernel TwistingTorusToMultiWaveKernel
+#pragma kernel TwistingTorusToRippleKernel
+#pragma kernel TwistingTorusToSphereKernel
+#pragma kernel TwistingTorusToDonutKindOfKernel
+#pragma kernel TwistingTorusToOnionKernel
+#pragma kernel TwistingTorusToSpaceStationKernel
+#pragma kernel TwistingTorusToTwistedOnionKernel
+#pragma kernel TwistingTorusToTorusKernel
+#pragma kernel TwistingTorusKernel
+
+
+
+#define PI 3.14159265358979323846
+
+RWStructuredBuffer<float3> _Positions;
+
+uint _Resolution;
+
+float _Step, _Time, _TransitionProgress;
+
+float2 GetUV(uint3 id)
+{
+    return (id.xy + 0.5) * _Step - 1.0;
+}
+
+void SetPosition(uint3 id, float3 position)
+{
+    if (id.x < _Resolution && id.y < _Resolution)
+    {
+        _Positions[id.x + id.y * _Resolution] = position;
+    }
+}
+
+float3 Wave(float u, float v, float t)
+{
+    float3 vec;
+    vec.x = u;
+    vec.y = sin(PI * (u + v + t));
+    vec.z = v;
+    return vec;
+}
+
+float3 MultiWave(float u, float v, float t)
+{
+    float3 vec;
+	vec.x = u;
+	vec.y = sin(PI * (u + 0.5 * t));
+	vec.y += 0.5 * sin(2.0 * PI * (v + t));
+	vec.y += sin(PI * (u + v + 0.25 * t));
+	vec.y *= 1.0 / 2.5;
+	vec.z = v;
+	return vec;
+}
+
+float3 Ripple(float u, float v, float t)
+{
+    float3 vec;
+    vec.x = u;
+    vec.z = v;
+
+    float y = sin(PI * (u + 0.5* t));
+    y += 0.5 * sin(2 * PI * (u + v + t));
+    y += sin(PI * (u + v + 0.25 * t));
+    vec.y = y;
+        
+    return vec;
+}
+
+float3 Sphere(float u, float v, float t)
+{
+    float r = (1 + sin(PI * t)) * 0.5f;
+    float s = r * cos(PI * 0.5* v);
+    float3 vec;
+    vec.x = sin(PI * u) * s;
+    vec.y = sin(PI * 0.5* v) * r;
+    vec.z = cos(PI * u) * s;
+    return vec;
+}
+
+float3 DonutKindOf(float u, float v, float t) 
+{
+    float r = (1 + sin(PI * t)) * 0.5f;
+    float s = r * cos(PI * 0.5* v);
+    float3 vec;
+    vec.x = sin(PI * u) * s;
+    vec.y = sin(PI * 0.5* v) * s;
+    vec.z = cos(PI * u) * s;
+    return vec;
+}
+
+float3 Onion(float u, float v, float t)
+{
+    float r = 0.9f + 0.1f * sin(6 * PI * u);
+    float s = r * cos(PI * 0.5 * v);
+    float3 vec;
+    vec.x = sin(PI * u) * s;
+    vec.y = sin(PI * 0.5* v) * r;
+    vec.z = cos(PI * u) * s;
+    return vec;
+}
+
+float3 SpaceStation(float u, float v, float t)
+{
+    float r = 0.9f + 0.1f * sin(12 * PI * v);
+    float s = r * cos(PI * 0.5* v);
+    float3 vec;
+    vec.x = sin(PI * u) * s;
+    vec.y = sin(PI * 0.5* v) * r;
+    vec.z = cos(PI * u) * s;
+    return vec;
+}
+
+float3 TwistedOnion(float u, float v, float t) 
+{
+    float r = 0.9f + 0.1f * sin(PI * (18 * u + 12 * v + t));
+    float s = r * cos(PI * 0.5* v);
+    float3 vec;
+    vec.x = sin(PI * u) * s;
+    vec.y = sin(PI * 0.5 * v) * r;
+    vec.z = cos(PI * u) * s;
+    return vec;
+}
+
+float3 Torus(float u, float v, float t)
+{
+    float r1 = 0.75f;
+    float r2 = 0.25f;
+    float s = r1 + r2 * cos(PI * v);
+    float3 vec;
+    vec.x = sin(PI * u) * s;
+    vec.y = sin(PI * v) * r2;
+    vec.z = cos(PI * u) * s;
+    return vec;
+}
+
+float3 TwistingTorus(float u, float v, float t)
+{
+    float r1 = 0.75 + 0.1 * sin(18 * u + 0.5 * t);
+    float r2 = 0.25 + 0.05 * sin(PI * (24 * u + 12 * v + 6 * t));
+    float s = r1 + r2 * cos(PI * v);
+    float3 vec;
+    vec.x = sin(PI * u) * s;
+    vec.y = sin(PI * v) * r2;
+    vec.z = cos(PI * u) * s;
+    return vec;
+}
+
+#define KERNEL_FUNCTION(function) \
+[numthreads(8, 8, 1)] \
+void function##Kernel(uint3 id: SV_DISPATCHTHREADID) \
+{ \
+    float2 uv = GetUV(id); \
+    SetPosition(id, function(uv.x, uv.y, _Time)); \
+}
+
+KERNEL_FUNCTION(Wave)
+KERNEL_FUNCTION(MultiWave)
+KERNEL_FUNCTION(Ripple)
+KERNEL_FUNCTION(Sphere)
+KERNEL_FUNCTION(DonutKindOf)
+KERNEL_FUNCTION(Onion)
+KERNEL_FUNCTION(SpaceStation)
+KERNEL_FUNCTION(TwistedOnion)
+KERNEL_FUNCTION(Torus)
+KERNEL_FUNCTION(TwistingTorus)
+
+#define KERNEL_MORPH_FUNCTION(functionA, functionB) \
+[numthreads(8, 8, 1)] \
+void functionA##To##functionB##Kernel(uint3 id: SV_DISPATCHTHREADID) \
+{ \
+    float2 uv = GetUV(id); \
+    float3 position = lerp( \
+			functionA(uv.x, uv.y, _Time), functionB(uv.x, uv.y, _Time), \
+			_TransitionProgress \
+		); \
+    SetPosition(id, position);\
+}
+
+KERNEL_MORPH_FUNCTION(Wave, MultiWave)
+KERNEL_MORPH_FUNCTION(Wave, Ripple)
+KERNEL_MORPH_FUNCTION(Wave, Sphere)
+KERNEL_MORPH_FUNCTION(Wave, DonutKindOf)
+KERNEL_MORPH_FUNCTION(Wave, Onion)
+KERNEL_MORPH_FUNCTION(Wave, SpaceStation)
+KERNEL_MORPH_FUNCTION(Wave, TwistedOnion)
+KERNEL_MORPH_FUNCTION(Wave, Torus)
+KERNEL_MORPH_FUNCTION(Wave, TwistingTorus)
+KERNEL_MORPH_FUNCTION(MultiWave, Wave)
+KERNEL_MORPH_FUNCTION(MultiWave, Ripple)
+KERNEL_MORPH_FUNCTION(MultiWave, Sphere)
+KERNEL_MORPH_FUNCTION(MultiWave, DonutKindOf)
+KERNEL_MORPH_FUNCTION(MultiWave, Onion)
+KERNEL_MORPH_FUNCTION(MultiWave, SpaceStation)
+KERNEL_MORPH_FUNCTION(MultiWave, TwistedOnion)
+KERNEL_MORPH_FUNCTION(MultiWave, Torus)
+KERNEL_MORPH_FUNCTION(MultiWave, TwistingTorus)
+KERNEL_MORPH_FUNCTION(Ripple, Wave)
+KERNEL_MORPH_FUNCTION(Ripple, MultiWave)
+KERNEL_MORPH_FUNCTION(Ripple, Sphere)
+KERNEL_MORPH_FUNCTION(Ripple, DonutKindOf)
+KERNEL_MORPH_FUNCTION(Ripple, Onion)
+KERNEL_MORPH_FUNCTION(Ripple, SpaceStation)
+KERNEL_MORPH_FUNCTION(Ripple, TwistedOnion)
+KERNEL_MORPH_FUNCTION(Ripple, Torus)
+KERNEL_MORPH_FUNCTION(Ripple, TwistingTorus)
+KERNEL_MORPH_FUNCTION(Sphere, Wave)
+KERNEL_MORPH_FUNCTION(Sphere, MultiWave)
+KERNEL_MORPH_FUNCTION(Sphere, Ripple)
+KERNEL_MORPH_FUNCTION(Sphere, DonutKindOf)
+KERNEL_MORPH_FUNCTION(Sphere, Onion)
+KERNEL_MORPH_FUNCTION(Sphere, SpaceStation)
+KERNEL_MORPH_FUNCTION(Sphere, TwistedOnion)
+KERNEL_MORPH_FUNCTION(Sphere, Torus)
+KERNEL_MORPH_FUNCTION(Sphere, TwistingTorus)
+KERNEL_MORPH_FUNCTION(DonutKindOf, Wave)
+KERNEL_MORPH_FUNCTION(DonutKindOf, MultiWave)
+KERNEL_MORPH_FUNCTION(DonutKindOf, Ripple)
+KERNEL_MORPH_FUNCTION(DonutKindOf, Sphere)
+KERNEL_MORPH_FUNCTION(DonutKindOf, Onion)
+KERNEL_MORPH_FUNCTION(DonutKindOf, SpaceStation)
+KERNEL_MORPH_FUNCTION(DonutKindOf, TwistedOnion)
+KERNEL_MORPH_FUNCTION(DonutKindOf, Torus)
+KERNEL_MORPH_FUNCTION(DonutKindOf, TwistingTorus)
+KERNEL_MORPH_FUNCTION(Onion, Wave)
+KERNEL_MORPH_FUNCTION(Onion, MultiWave)
+KERNEL_MORPH_FUNCTION(Onion, Ripple)
+KERNEL_MORPH_FUNCTION(Onion, Sphere)
+KERNEL_MORPH_FUNCTION(Onion, DonutKindOf)
+KERNEL_MORPH_FUNCTION(Onion, SpaceStation)
+KERNEL_MORPH_FUNCTION(Onion, TwistedOnion)
+KERNEL_MORPH_FUNCTION(Onion, Torus)
+KERNEL_MORPH_FUNCTION(Onion, TwistingTorus)
+KERNEL_MORPH_FUNCTION(SpaceStation, Wave)
+KERNEL_MORPH_FUNCTION(SpaceStation, MultiWave)
+KERNEL_MORPH_FUNCTION(SpaceStation, Ripple)
+KERNEL_MORPH_FUNCTION(SpaceStation, Sphere)
+KERNEL_MORPH_FUNCTION(SpaceStation, DonutKindOf)
+KERNEL_MORPH_FUNCTION(SpaceStation, Onion)
+KERNEL_MORPH_FUNCTION(SpaceStation, TwistedOnion)
+KERNEL_MORPH_FUNCTION(SpaceStation, Torus)
+KERNEL_MORPH_FUNCTION(SpaceStation, TwistingTorus)
+KERNEL_MORPH_FUNCTION(TwistedOnion, Wave)
+KERNEL_MORPH_FUNCTION(TwistedOnion, MultiWave)
+KERNEL_MORPH_FUNCTION(TwistedOnion, Ripple)
+KERNEL_MORPH_FUNCTION(TwistedOnion, Sphere)
+KERNEL_MORPH_FUNCTION(TwistedOnion, DonutKindOf)
+KERNEL_MORPH_FUNCTION(TwistedOnion, Onion)
+KERNEL_MORPH_FUNCTION(TwistedOnion, SpaceStation)
+KERNEL_MORPH_FUNCTION(TwistedOnion, Torus)
+KERNEL_MORPH_FUNCTION(TwistedOnion, TwistingTorus)
+KERNEL_MORPH_FUNCTION(Torus, Wave)
+KERNEL_MORPH_FUNCTION(Torus, MultiWave)
+KERNEL_MORPH_FUNCTION(Torus, Ripple)
+KERNEL_MORPH_FUNCTION(Torus, Sphere)
+KERNEL_MORPH_FUNCTION(Torus, DonutKindOf)
+KERNEL_MORPH_FUNCTION(Torus, Onion)
+KERNEL_MORPH_FUNCTION(Torus, SpaceStation)
+KERNEL_MORPH_FUNCTION(Torus, TwistedOnion)
+KERNEL_MORPH_FUNCTION(Torus, TwistingTorus)
+KERNEL_MORPH_FUNCTION(TwistingTorus, Wave)
+KERNEL_MORPH_FUNCTION(TwistingTorus, MultiWave)
+KERNEL_MORPH_FUNCTION(TwistingTorus, Ripple)
+KERNEL_MORPH_FUNCTION(TwistingTorus, Sphere)
+KERNEL_MORPH_FUNCTION(TwistingTorus, DonutKindOf)
+KERNEL_MORPH_FUNCTION(TwistingTorus, Onion)
+KERNEL_MORPH_FUNCTION(TwistingTorus, SpaceStation)
+KERNEL_MORPH_FUNCTION(TwistingTorus, TwistedOnion)
+KERNEL_MORPH_FUNCTION(TwistingTorus, Torus)

@@ -4,17 +4,17 @@ using UnityEngine;
 public class Graph : MonoBehaviour
 {
     [SerializeField] Transform pointPrefab;
-    [SerializeField, Range(10, 100)] int resolution = 10;
+    [SerializeField, Range(10, 400)] int resolution = 10;
     [SerializeField] FunctionLibrary.FunctionName function;
+
+    public enum TransitionMode { Sequential, Random };
+    [SerializeField] TransitionMode transitionMode = TransitionMode.Sequential;
 
     [SerializeField, Min(0f)] float functionDuration = 1f;
     [SerializeField, Min(0f)] float transitionDuration = 1f;
     float duration = 0f;
     bool transitioning = false;
     FunctionLibrary.FunctionName transitionFunction;
-
-    public enum TransitionMode { Sequential, Random };
-    [SerializeField] TransitionMode transitionMode = TransitionMode.Sequential;
 
     private Transform[] points;
 
